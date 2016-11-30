@@ -25,7 +25,7 @@
 /// A priority queue with fixed size. When the maximum size was reached,
 /// the element with the lowest priority would be removed automatically.
 /// Note that this class only supports point elements.
-template<typename T>
+template<typename T, class Compare = std::less<T> >
 class fixed_size_priority_queue
 {
   public:
@@ -37,21 +37,22 @@ class fixed_size_priority_queue
 
     inline void push(const T &x) {
       if(c_.size() == max_size_) {
-        if(x > *std::min_element(c_.begin(), c_.end())) {
-            *std::min_element(c_.begin(), c_.end()) = x;
-            std::make_heap(c_.begin(), c_.end());
+        typename std::vector<T>::iterator iterator_min = std::min_element(c_.begin(), c_.end(), cmp);
+        if(x > *iterator_min) {
+          *iterator_min = x;
+          std::make_heap(c_.begin(), c_.end(), cmp);
         }
       }
       else {
         c_.push_back(x);
-        std::make_heap(c_.begin(), c_.end());
+        std::make_heap(c_.begin(), c_.end(), cmp);
       }
     }
 
     inline void pop() {
       if (c_.empty())
         return;
-      std::pop_heap(c_.begin(), c_.end());
+      std::pop_heap(c_.begin(), c_.end(), cmp);
       c_.pop_back();
     }
 
@@ -70,6 +71,7 @@ class fixed_size_priority_queue
   protected:
     std::vector<T> c_;
     size_t max_size_;
+    Compare cmp;
 
   private:
     // heap allocation is not allowed

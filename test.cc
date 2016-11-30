@@ -27,11 +27,11 @@ class Foo {
       return os;    
     }
 
-    inline bool operator < (const Foo &other) const {
+    inline bool operator< (const Foo &other) const {
       return b_ < other.b_;
     }
 
-    inline bool operator > (const Foo &other) const {
+    inline bool operator> (const Foo &other) const {
       return b_ > other.b_;
     }
 
@@ -40,8 +40,20 @@ class Foo {
     float b_;
 };
 
+struct FooPointerCmp {
+  bool operator() (Foo *i, Foo *j) { return *i < *j; }
+};
 
 template<typename T>
+void print_queue(fixed_size_priority_queue<T> &q) {
+    cout << "[size = " << q.size() << ", top = " << q.top() << "]";
+    for (typename fixed_size_priority_queue<T>::iterator it = q.begin(); it != q.end(); it++) {
+        cout << "\t" << *it;
+    }
+    cout << endl;
+}
+
+template<typename T, class Compare>
 void print_queue(fixed_size_priority_queue<T> &q) {
     cout << "[size = " << q.size() << ", top = " << q.top() << "]";
     for (typename fixed_size_priority_queue<T>::iterator it = q.begin(); it != q.end(); it++) {
@@ -87,7 +99,7 @@ int main(int argc, char const *argv[]) {
   q_complex.push(Foo(9, 0));
   test(q_complex);
   
-  fixed_size_priority_queue<Foo*> q_pointer(5);
+  fixed_size_priority_queue<Foo*, FooPointerCmp> q_pointer(5);
   q_pointer.push(new Foo(2, 3));
   q_pointer.push(new Foo(3, 2));
   q_pointer.push(new Foo(1, 5));
@@ -98,7 +110,13 @@ int main(int argc, char const *argv[]) {
   q_pointer.push(new Foo(3, 7));
   q_pointer.push(new Foo(1, 1));
   q_pointer.push(new Foo(9, 0));
-  test(q_pointer);
+
+  cout << "[size = " << q_pointer.size() << ", top = " << q_pointer.top() << "]";
+  for (typename fixed_size_priority_queue<Foo*, FooPointerCmp>::iterator it = q_pointer.begin(); it != q_pointer.end(); it++) {
+      cout << "\t" << **it;
+  }
+  cout << endl;
+  //test(q_pointer);
 
   return 0;
 }
