@@ -35,16 +35,13 @@ class fixed_size_priority_queue
     iterator begin() { return c_.begin(); }
     iterator end() { return c_.end(); }
 
-    inline void push(const T &x) { 
-      // If we've reached capacity, find the FIRST smallest object and replace
-      // it if 'x' is larger
+    inline void push(const T &x) {
       if(c_.size() == max_size_) {
         if(x > *std::min_element(c_.begin(), c_.end())) {
             *std::min_element(c_.begin(), c_.end()) = x;
             std::make_heap(c_.begin(), c_.end());
         }
       }
-      // Otherwise just push the new item.
       else {
         c_.push_back(x);
         std::make_heap(c_.begin(), c_.end());
@@ -71,7 +68,7 @@ class fixed_size_priority_queue
     size_t max_size_;
 
   private:
-    // Prevent heap allocation
+    // heap allocation is not allowed
     void * operator new   (size_t);
     void * operator new[] (size_t);
     void   operator delete   (void *);
