@@ -18,6 +18,7 @@
 #ifndef FIXED_SIZE_PRIORITY_QUEUE_H_
 #define FIXED_SIZE_PRIORITY_QUEUE_H_
 
+#include <iostream>
 #include <algorithm>
 #include <vector>
 
@@ -25,37 +26,51 @@
 /// the element with the lowest priority would be removed automatically.
 /// Note that this class only supports point elements.
 template<typename T>
-class fixed_size_priority_queue 
+class fixed_size_priority_queue
 {
   public:
-    void set_size(unsigned int size) {
-      fixed_size = size; 
-    }
-    void push(const T& x) 
-    { 
+    fixed_size_priority_queue(size_t max_size) : max_size_(max_size) {}
+
+    typedef typename std::vector<T>::iterator iterator;
+    iterator begin() { return c_.begin(); }
+    iterator end() { return c_.end(); }
+
+    inline void push(const T &x) { 
       // If we've reached capacity, find the FIRST smallest object and replace
       // it if 'x' is larger
-      if(c_.size() == fixed_size)
-      {
-        // 'c' is the container used by priority_queue and is a protected member.
-        if(x > *std::min_element(c_.begin(), c_.end()))
-        {
+      if(c_.size() == max_size_) {
+        if(x > *std::min_element(c_.begin(), c_.end())) {
             *std::min_element(c_.begin(), c_.end()) = x;
-            // Re-make the heap, since we may have just invalidated it.
             std::make_heap(c_.begin(), c_.end());
         }
       }
       // Otherwise just push the new item.
-      else          
-      {
+      else {
         c_.push_back(x);
+        std::make_heap(c_.begin(), c_.end());
       }
     }
 
-  private:
-    std::vector<T> c_;
-    unsigned int fixed_size;
+    inline void pop() {
+      if (c_.empty())
+        return;
+      std::pop_heap(c_.begin(), c_.end());
+      c_.pop_back();
+    }
 
+    inline T& top() {
+      return c_.front();
+    }
+
+    inline size_t size() {
+      return c_.size();
+    }
+
+  protected:
+    std::vector<T> c_;
+    size_t max_size_;
+
+  private:
     // Prevent heap allocation
     void * operator new   (size_t);
     void * operator new[] (size_t);
