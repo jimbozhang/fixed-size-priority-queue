@@ -52,13 +52,12 @@ void print_queue(fixed_size_priority_queue<T> &q) {
 
 template<typename T>
 void test(fixed_size_priority_queue<T> &q) {
-  cout << "Init" << endl;
   print_queue(q);
-  for (size_t i = 0; i < 8; i++) {
+  while (! q.empty()) {
     q.pop();
-    cout << "[" << i << "] pop" << endl;
     print_queue(q);
   }
+  cout << endl;
 }
 
 int main(int argc, char const *argv[]) {

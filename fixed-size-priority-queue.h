@@ -59,6 +59,10 @@ class fixed_size_priority_queue
       return c_.front();
     }
 
+    inline bool empty() {
+      return c_.empty();
+    }
+
     inline size_t size() {
       return c_.size();
     }
