@@ -22,7 +22,6 @@
 
 /// A priority queue with fixed size. When the maximum size was reached,
 /// the element with the lowest priority would be removed automatically.
-/// Note that this class only supports point elements.
 template<typename T, class Compare = std::less<T> >
 class fixed_size_priority_queue
 {
