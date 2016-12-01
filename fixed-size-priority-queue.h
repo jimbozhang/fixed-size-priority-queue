@@ -62,7 +62,7 @@ class fixed_size_priority_queue
       return c_.empty();
     }
 
-    inline const size_t size()  const {
+    inline const size_t size() const {
       return c_.size();
     }
 
