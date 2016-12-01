@@ -22,10 +22,11 @@
 
 /// A priority queue with fixed size. When the maximum size was reached,
 /// the element with the lowest priority would be removed automatically.
-template<typename T, class Compare = std::less<T> >
+template<typename T, typename Compare = std::less<T> >
 class fixed_size_priority_queue
 {
   public:
+    fixed_size_priority_queue() : max_size_(0) {}
     fixed_size_priority_queue(size_t max_size) : max_size_(max_size) {}
 
     typedef typename std::vector<T>::iterator iterator;
@@ -35,7 +36,7 @@ class fixed_size_priority_queue
     inline void push(const T &x) {
       if(c_.size() == max_size_) {
         typename std::vector<T>::iterator iterator_min = std::min_element(c_.begin(), c_.end(), cmp);
-        if(x > *iterator_min) {
+        if(*iterator_min < x) {
           *iterator_min = x;
           std::make_heap(c_.begin(), c_.end(), cmp);
         }
@@ -53,16 +54,21 @@ class fixed_size_priority_queue
       c_.pop_back();
     }
 
-    inline T& top() {
+    inline const T& top() const {
       return c_.front();
     }
 
-    inline bool empty() {
+    inline const bool empty() const {
       return c_.empty();
     }
 
-    inline size_t size() {
+    inline const size_t size()  const {
       return c_.size();
+    }
+
+    inline void enlarge_max_size(size_t max_size) {
+      if (max_size_ < max_size)
+        max_size_ = max_size;
     }
 
   protected:

@@ -20,17 +20,13 @@ class Foo {
   public:
     Foo (int a, float b) : a_(a), b_(b) {}
   
-    friend inline std::ostream &operator<<(std::ostream &os, Foo &foo) {
+    friend inline std::ostream &operator<<(std::ostream &os, const Foo &foo) {
       os << "(" << foo.a_ << ", " << foo.b_ << ")";
       return os;    
     }
 
     inline bool operator< (const Foo &other) const {
       return b_ < other.b_;
-    }
-
-    inline bool operator> (const Foo &other) const {
-      return b_ > other.b_;
     }
 
   private:
@@ -51,7 +47,7 @@ void print_queue(fixed_size_priority_queue<T> &q) {
     cout << endl;
 }
 
-template<typename T, class Compare>
+template<typename T, typename Compare>
 void print_queue(fixed_size_priority_queue<T> &q) {
     cout << "[size = " << q.size() << ", top = " << q.top() << "]";
     for (typename fixed_size_priority_queue<T>::iterator it = q.begin(); it != q.end(); it++) {
@@ -79,6 +75,10 @@ int main(int argc, char const *argv[]) {
   q_simple.push(5);
   q_simple.push(6);
   q_simple.push(2);
+  q_simple.push(3);
+  q_simple.push(1);
+  q_simple.push(9);
+  q_simple.enlarge_max_size(10);
   q_simple.push(3);
   q_simple.push(1);
   q_simple.push(9);
