@@ -13,108 +13,90 @@
 // See the Apache 2 License for the specific language governing permissions and
 // limitations under the License.
 
-#include "fixed-size-priority-queue.h"
+#include "MinMaxHeap.h"
+#include <iostream>
+#include <random>
+
 using namespace std;
 
-class Foo {
-  public:
-    Foo (int a, float b) : a_(a), b_(b) {}
-  
-    friend inline std::ostream &operator<<(std::ostream &os, const Foo &foo) {
-      os << "(" << foo.a_ << ", " << foo.b_ << ")";
-      return os;    
+// A sample comparable object...
+struct SomeThing
+{
+    // Some sample data...
+    long int    m_A;
+    bool        m_B;
+
+    // Default constructor...
+    SomeThing()
+      : m_A(0),
+        m_B(false)
+    {
     }
 
-    inline bool operator< (const Foo &other) const {
-      return b_ < other.b_;
+    // Construct from an integer...
+    SomeThing(const long int A)
+      : m_A(A),
+        m_B(true)
+    {
     }
 
-  private:
-    int a_;
-    float b_;
+    // Compare with another object...
+    bool operator<(const SomeThing &RightHandSide) const noexcept
+    {
+        return m_A < RightHandSide.m_A;
+    }
 };
 
-struct FooPointerCmp {
-  bool operator() (Foo *i, Foo *j) { return *i < *j; }
-};
+int main()
+{
+    // Alert user...
+    cout << "Checking min-max heap construction via Floyds' method..." << endl;
 
-template<typename T>
-void print_queue(fixed_size_priority_queue<T> &q) {
-    cout << "[size = " << q.size() << ", top = " << q.top() << "]";
-    for (typename fixed_size_priority_queue<T>::iterator it = q.begin(); it != q.end(); it++) {
-        cout << "\t" << *it;
+    // Number of sample elements...
+    constexpr auto TotalElements = 10'000'000;
+
+    // Populate a sample buffer of incrementing SomeThing values...
+    cout << "Constructing sample buffer of size: " << TotalElements << endl;
+    vector<SomeThing> SampleValues(TotalElements);
+    iota(begin(SampleValues), end(SampleValues), 1l);
+
+    // Seed a random generator and use generator to randomly arrange
+    //  sample values so we don't inject in sorted order...
+    cout << "Randomizing order..." << endl;
+    random_device RandomDevice;
+    mt19937 RandomGenerator(RandomDevice());
+    shuffle(begin(SampleValues), end(SampleValues), RandomGenerator);
+
+    // Build min-max heap using Floyd's method...
+    cout << "Constructing heap via Floyd's method..." << endl;
+    MinMaxHeap<SomeThing> SomeMinMaxHeap(
+        begin(SampleValues), end(SampleValues));
+
+    // As we unload the min-max heap, these are the ordinals our values
+    //  are expected to carry...
+    long int MinimumExpectedValue = 1l;
+    long int MaximumExpectedValue = TotalElements;
+
+    // Keep unloading, while not empty...
+    cout << "Verifying heap";
+    while(!SomeMinMaxHeap.IsEmpty())
+    {
+        // Show periodic status update...
+        if((SomeMinMaxHeap.GetSize() % 1'000'000) == 0)
+            cout << "." << flush;
+
+        // Find, validate, delete and increment next expected minimum...
+        const auto &CurrentMinimum = SomeMinMaxHeap.FindMinimum();
+        assert(CurrentMinimum.m_A == MinimumExpectedValue++);
+        SomeMinMaxHeap.DeleteMinimum();
+
+        // Find, validate, delete and increment next expected maximum...
+        const auto &CurrentMaximum = SomeMinMaxHeap.FindMaximum();
+        assert(CurrentMaximum.m_A == MaximumExpectedValue--);
+        SomeMinMaxHeap.DeleteMaximum();
     }
-    cout << endl;
+
+    // Done...
+    cout << endl << endl;
 }
 
-template<typename T, typename Compare>
-void print_queue(fixed_size_priority_queue<T> &q) {
-    cout << "[size = " << q.size() << ", top = " << q.top() << "]";
-    for (typename fixed_size_priority_queue<T>::iterator it = q.begin(); it != q.end(); it++) {
-        cout << "\t" << *it;
-    }
-    cout << endl;
-}
-
-template<typename T>
-void test(fixed_size_priority_queue<T> &q) {
-  print_queue(q);
-  while (! q.empty()) {
-    q.pop();
-    print_queue(q);
-  }
-  cout << endl;
-}
-
-int main(int argc, char const *argv[]) {
-  fixed_size_priority_queue<int> q_simple(5);
-  q_simple.push(2);
-  q_simple.push(3);
-  q_simple.push(1);
-  q_simple.push(5);
-  q_simple.push(5);
-  q_simple.push(6);
-  q_simple.push(2);
-  q_simple.push(3);
-  q_simple.push(1);
-  q_simple.push(9);
-  q_simple.enlarge_max_size(10);
-  q_simple.push(3);
-  q_simple.push(1);
-  q_simple.push(9);
-  test(q_simple);
-
-  fixed_size_priority_queue<Foo> q_complex(5);
-  q_complex.push(Foo(2, 3));
-  q_complex.push(Foo(3, 2));
-  q_complex.push(Foo(1, 5));
-  q_complex.push(Foo(5, 7));
-  q_complex.push(Foo(5, 23));
-  q_complex.push(Foo(6, 3));
-  q_complex.push(Foo(2, 6));
-  q_complex.push(Foo(3, 7));
-  q_complex.push(Foo(1, 1));
-  q_complex.push(Foo(9, 0));
-  test(q_complex);
-  
-  fixed_size_priority_queue<Foo*, FooPointerCmp> q_pointer(5);
-  q_pointer.push(new Foo(2, 3));
-  q_pointer.push(new Foo(3, 2));
-  q_pointer.push(new Foo(1, 5));
-  q_pointer.push(new Foo(5, 7));
-  q_pointer.push(new Foo(5, 23));
-  q_pointer.push(new Foo(6, 3));
-  q_pointer.push(new Foo(2, 6));
-  q_pointer.push(new Foo(3, 7));
-  q_pointer.push(new Foo(1, 1));
-  q_pointer.push(new Foo(9, 0));
-
-  cout << "[size = " << q_pointer.size() << ", top = " << q_pointer.top() << "]";
-  for (typename fixed_size_priority_queue<Foo*, FooPointerCmp>::iterator it = q_pointer.begin(); it != q_pointer.end(); it++) {
-      cout << "\t" << **it;
-  }
-  cout << endl;
-  //test(q_pointer);
-
-  return 0;
-}
