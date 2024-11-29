@@ -36,7 +36,7 @@ class fixed_size_priority_queue
     inline void push(const T &x) {
       if(c_.size() == max_size_) {
         typename std::vector<T>::iterator iterator_min = std::min_element(c_.begin(), c_.end(), cmp);
-        if(*iterator_min < x) {
+        if(cmp(*iterator_min, x)) {
           *iterator_min = x;
           std::make_heap(c_.begin(), c_.end(), cmp);
         }
